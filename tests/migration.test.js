@@ -1,14 +1,12 @@
 import { Database } from "bun:sqlite";
 import { expect, test } from "bun:test";
 import { unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { openStore } from "../backend/store.js";
 
 test("legacy notifications retain null attribution across idempotent migration", () => {
 	const path =
-		(process.env.TMPDIR || "/home/calypso/.hermes/cache/scratch") +
-		"/eznotify-migration-" +
-		crypto.randomUUID() +
-		".sqlite";
+		tmpdir() + "/eznotify-migration-" + crypto.randomUUID() + ".sqlite";
 	let store;
 	try {
 		const db = new Database(path);
