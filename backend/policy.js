@@ -4,6 +4,8 @@ export function outboundTransport(origins = "", transport = fetch) {
 		"https://discord.com",
 		"https://discordapp.com",
 		"https://api.telegram.org",
+		"https://hooks.slack.com",
+		"https://api.pushover.net",
 	]);
 	for (const value of origins.split(",").filter(Boolean)) {
 		const url = new URL(value.trim());

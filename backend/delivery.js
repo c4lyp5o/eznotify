@@ -1,10 +1,30 @@
+import { sendSmtp, validateSmtp } from "./smtp.js";
+
 export function validateDestination(kind, config) {
+	if (kind === "smtp") return validateSmtp(config);
+	if (kind === "webhook") {
+		const url = new URL(config.url);
+		if (
+			url.protocol !== "https:" ||
+			url.username ||
+			url.password ||
+			url.hash ||
+			(config.token !== undefined &&
+				(typeof config.token !== "string" || /[\r\n]/.test(config.token)))
+		)
+			throw new Error(
+				"Use an HTTPS webhook URL and valid optional bearer token",
+			);
+		return;
+	}
 	if (
 		![
 			"discord",
 			"discord-bot",
 			"telegram",
 			"gotify",
+			"slack",
+			"pushover",
 			"ntfy",
 			"matrix",
 		].includes(kind)
@@ -25,7 +45,27 @@ export function validateDestination(kind, config) {
 			throw new Error("Bot token and chat ID required");
 		return;
 	}
+	if (kind === "pushover") {
+		if (
+			!/^[A-Za-z0-9]{30}$/.test(config.token || "") ||
+			!/^[A-Za-z0-9]{30}$/.test(config.user || "")
+		)
+			throw new Error("Pushover application token and user/group key required");
+		return;
+	}
 	const url = new URL(config.url);
+	if (
+		kind === "slack" &&
+		(url.protocol !== "https:" ||
+			url.hostname !== "hooks.slack.com" ||
+			url.port ||
+			!/^\/services\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(
+				url.pathname,
+			) ||
+			url.search ||
+			url.hash)
+	)
+		throw new Error("Use a Slack incoming webhook URL");
 	if (
 		!["http:", "https:"].includes(url.protocol) ||
 		url.username ||
@@ -58,10 +98,24 @@ export async function send(destination, body, transport = fetch) {
 		throw Object.assign(new Error("Message exceeds destination limit"), {
 			retryable: false,
 		});
+	if (
+		(destination.kind === "pushover" &&
+			(body.body.length > 1024 || (body.title || "").length > 250)) ||
+		(destination.kind === "slack" && text.length > 39000)
+	)
+		throw Object.assign(new Error("Message exceeds destination limit"), {
+			retryable: false,
+		});
+	if (destination.kind === "smtp") return sendSmtp(c, body);
 	let url = c.url,
 		payload,
 		headers = { "Content-Type": "application/json" };
 	switch (destination.kind) {
+		case "webhook":
+			validateDestination("webhook", c);
+			payload = { title: body.title || "", body: body.body };
+			if (c.token) headers.Authorization = "Bearer " + c.token;
+			break;
 		case "discord-bot":
 			url = "https://discord.com/api/v10/channels/" + c.channelId + "/messages";
 			headers.Authorization = "Bot " + c.token;
@@ -76,6 +130,23 @@ export async function send(destination, body, transport = fetch) {
 		case "telegram":
 			url = "https://api.telegram.org/bot" + c.token + "/sendMessage";
 			payload = { chat_id: c.chatId, text: text.slice(0, 4000) };
+			break;
+		case "slack":
+			payload = {
+				text,
+				mrkdwn: false,
+				unfurl_links: false,
+				unfurl_media: false,
+			};
+			break;
+		case "pushover":
+			url = "https://api.pushover.net/1/messages.json";
+			payload = {
+				token: c.token,
+				user: c.user,
+				title: body.title,
+				message: body.body,
+			};
 			break;
 		case "gotify":
 			url = c.url.replace(/\/$/, "") + "/message";
@@ -128,6 +199,18 @@ export async function send(destination, body, transport = fetch) {
 		signal: AbortSignal.timeout(10000),
 		redirect: "error",
 	});
+	if (response.ok && destination.kind === "pushover") {
+		let result;
+		try {
+			result = await response.json();
+		} catch {
+			throw new Error("Provider returned invalid response");
+		}
+		if (result.status !== 1)
+			throw Object.assign(new Error("Provider rejected notification"), {
+				retryable: false,
+			});
+	}
 	if (!response.ok) {
 		const err = new Error("Provider HTTP " + response.status);
 		err.retryable = response.status === 429 || response.status >= 500;

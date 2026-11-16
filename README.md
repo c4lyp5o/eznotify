@@ -2,9 +2,44 @@
 
 One integration per service. eznotify fans a single request out to many notification platforms, so you don't wire the same service up again for each one.
 
-Supported destinations: **Discord** (webhook or bot token), **Telegram**, **ntfy**, **Gotify**, and **Matrix** (unencrypted rooms only).
+Supported destinations: **Discord** (webhook or bot token), **Telegram**, **Slack** (incoming webhook), **Pushover**, **ntfy**, **Gotify**, and **Matrix** (unencrypted rooms only).
 
 > **Status: 0.1.0 local alpha.** Not for public exposure. See [Known limits](#known-limits).
+
+## Generic outgoing webhooks
+
+Choose **Generic webhook** to POST a fixed JSON object with `title` and `body`
+to an HTTPS receiver. An optional bearer token is encrypted with the URL.
+Custom headers, methods and payload templates are deliberately unsupported.
+Add the exact receiver origin to `EZNOTIFY_OUTBOUND_ORIGINS` and restart.
+The standard trusted-provider origins remain available; arbitrary origins are denied.
+Redirects, URL credentials and plaintext HTTP are refused. Egress filtering is
+still required against DNS rebinding and access to internal services.
+
+Only 2xx responses count as acceptance. 429 and 5xx responses retry with the
+existing bounded backoff; other non-2xx responses fail terminally. Receiver
+acceptance is not downstream delivery. Requests may duplicate after ambiguous
+acceptance: receivers must handle repeat notifications safely.
+Saving/format validation sends nothing; use the explicit test button.
+
+## Email / SMTP
+
+Choose **Email / SMTP** in the destination wizard. Credentials are encrypted with
+the other destination configuration; saving or validating sends nothing.
+Use a dedicated account/app password, a provider-authorized sender and a single
+bare recipient address. OAuth-only accounts, recipient lists and attachments
+are not supported. Notifications are plain text.
+
+Allow exact submission endpoints using `EZNOTIFY_SMTP_SERVERS`, for example
+`smtp.example.com:587,smtp.example.com:465`, and restart the service after changes.
+The default is deny-all. This is separate from the HTTPS origin allowlist.
+Port 465 uses implicit TLS; 587 requires STARTTLS. Certificate validation cannot
+be disabled. Network egress restrictions are still needed against DNS rebinding.
+
+Use the explicit test button and confirm receipt, including spam. SMTP acceptance
+does not guarantee inbox delivery. Configure SPF/DKIM/DMARC with your provider.
+Transient failures retry; authentication and permanent 5xx refusals fail terminally.
+A retry after ambiguous acceptance can duplicate mail, as with other transports.
 
 ## Docker Compose (recommended)
 
@@ -67,7 +102,9 @@ EZNOTIFY_ADMIN_TOKEN=… EZNOTIFY_ENCRYPTION_KEY=… bun start
 - **Discord bot:** bot token plus channel ID. The bot needs View Channel and Send Messages in that channel. Mentions are suppressed.
 - **Telegram:** a dedicated bot token and chat ID. Discovery uses `getUpdates`, which can conflict with another poller. An existing webhook blocks discovery, and eznotify will not remove it.
 - **ntfy:** server URL, topic, and an optional access token. A hard-to-guess topic is not access control; configure server-side auth.
-- **Gotify:** server URL and an application token (not a client token).
+- **Slack:** incoming webhook for the intended channel; the entire URL is secret. Plain text only, with link/media unfurling disabled.
+- **Pushover:** application API token and user/group key; normal priority only. Maximum 1024 message characters and 250 title characters; oversize messages fail explicitly.
+- **Gotify:** HTTPS server URL and an application token (not a client token). Explicitly allow the server origin in `EZNOTIFY_OUTBOUND_ORIGINS`.
 - **Matrix:** homeserver URL, a bot access token, and an internal room ID. Use a **private, unencrypted** room. Encrypted rooms are refused before any message is sent.
 
 Each destination has an explicit **Send test** button. Saving never sends a message.
@@ -132,7 +169,7 @@ controlled transport in `tests/acceptance.test.js`.
 - Delivery is at least once. A crash after provider acceptance can duplicate a message.
 - **One worker only.** Do not run multiple replicas against the same database.
 - Terminal notification history expires after 30 days (hourly cleanup); pending fanout is preserved. Idempotency protection expires with history. Jobs are capped at 100,000 total / 10,000 pending, and the SQLite main database at 256 MiB. WAL and filesystem usage still require an operator volume quota and monitoring.
-- Production outbound traffic defaults to Discord and Telegram HTTPS origins only. Set `EZNOTIFY_OUTBOUND_ORIGINS` to a comma-separated list of exact HTTPS origins for self-hosted providers. Redirects are refused. Only allow origins you control: DNS/IP network isolation remains an operator requirement (the origin policy is not a DNS-rebinding firewall). HTTP destinations are denied by the production transport.
+- Production outbound traffic defaults to Discord, Telegram, Slack incoming webhooks and Pushover HTTPS origins only. Set `EZNOTIFY_OUTBOUND_ORIGINS` to a comma-separated list of exact HTTPS origins for self-hosted providers. Redirects are refused. Only allow origins you control: DNS/IP network isolation remains an operator requirement (the origin policy is not a DNS-rebinding firewall). HTTP destinations are denied by the production transport.
 - Polling is snapshot-based, not an event stream; intermediate transitions can be missed.
 
 ## Roadmap before any public exposure

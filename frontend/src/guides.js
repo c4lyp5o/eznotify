@@ -1,4 +1,71 @@
 export const guides = {
+	webhook: {
+		name: "Generic webhook",
+		description: "Send a fixed JSON notification to an HTTPS endpoint.",
+		steps: [
+			"Create an HTTPS receiver accepting POST with JSON fields title and body. Custom payload templates and arbitrary headers are not supported.",
+			"Ask the operator to add the exact receiver origin to EZNOTIFY_OUTBOUND_ORIGINS and restart eznotify. Redirects and plaintext HTTP are refused.",
+			"Enter the full receiver URL and an optional bearer token. URLs and tokens are stored encrypted; keep them private.",
+			"Validate, save, then explicitly send a test. A 2xx response means receiver acceptance, not downstream delivery.",
+			"Receivers should tolerate duplicate requests: transient failures and ambiguous acceptance can cause retries. Avoid endpoints that trigger unsafe repeated actions.",
+		],
+		fields: [
+			["url", "HTTPS receiver URL", "password"],
+			["token", "Bearer token (optional)", "password"],
+		],
+		link: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST",
+	},
+	smtp: {
+		name: "Email / SMTP",
+		description:
+			"Plain-text email through an authenticated TLS SMTP submission server.",
+		steps: [
+			"Get SMTP submission settings from your mail provider. Use port 465 for implicit TLS or 587 for mandatory STARTTLS. Plaintext SMTP is not supported.",
+			"Create a dedicated account or app password. OAuth-only accounts are not supported; never disable certificate verification.",
+			"Ask the eznotify operator to allow the exact host:port in EZNOTIFY_SMTP_SERVERS, then restart the service. This is separate from the HTTPS origin allowlist.",
+			"Enter the SMTP host (no URL), port, username, password, permitted sender and one recipient email address. Use bare mailboxes, not display names or lists.",
+			"Validate the format, save, then explicitly send a test. Confirm receipt and check spam. Server acceptance does not guarantee inbox delivery; configure SPF/DKIM/DMARC with your mail provider.",
+		],
+		fields: [
+			["host", "SMTP host", "text"],
+			["port", "Port (465 or 587)", "number"],
+			["username", "Username", "text"],
+			["password", "App password", "password"],
+			["from", "Sender address", "email"],
+			["to", "Recipient address", "email"],
+		],
+		link: "https://nodemailer.com/smtp",
+	},
+	slack: {
+		name: "Slack",
+		description:
+			"Post plain-text notifications to a channel using an incoming webhook.",
+		steps: [
+			"Create a Slack app at api.slack.com/apps in the destination workspace.",
+			"Enable Incoming Webhooks, then Add New Webhook to Workspace and authorize the intended channel.",
+			"Copy the hooks.slack.com webhook URL. Treat the entire URL as a secret.",
+			"Paste it below, validate, save and explicitly send a test. Confirm receipt in the selected channel.",
+		],
+		fields: [["url", "Incoming webhook URL", "password"]],
+		link: "https://api.slack.com/messaging/webhooks",
+	},
+	pushover: {
+		name: "Pushover",
+		description:
+			"Send normal-priority push notifications to your Pushover devices.",
+		steps: [
+			"Install Pushover on your phone and sign in. Device licensing may require a purchase.",
+			"Sign in at pushover.net and copy your User Key, or use a delivery group key.",
+			"Create an application/API token named eznotify. Keep both keys private.",
+			"Enter the application token and user/group key. Validate, save, then explicitly send a test and confirm receipt.",
+			"Messages are limited to 1024 characters and titles to 250. Oversize messages fail rather than truncate. Emergency priority is not supported.",
+		],
+		fields: [
+			["token", "Application API token", "password"],
+			["user", "User / group key", "password"],
+		],
+		link: "https://pushover.net/api",
+	},
 	"discord-bot": {
 		name: "Discord bot",
 		description:
@@ -53,7 +120,7 @@ export const guides = {
 			"Open your Gotify server and sign in.",
 			"Go to Apps and create an application named eznotify.",
 			"Copy the application token. Confirm the Gotify server is reachable from the eznotify server.",
-			"Enter the server base URL and application token. Save, then send a test.",
+			"Allow the exact HTTPS server origin in EZNOTIFY_OUTBOUND_ORIGINS on eznotify, then enter its base URL and application token. Validate, save, then send a test.",
 			"Subscribe with your Gotify client to receive the message.",
 		],
 		fields: [

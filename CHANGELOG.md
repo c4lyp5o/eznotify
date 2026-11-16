@@ -4,6 +4,13 @@ All notable changes to eznotify. Versions follow [Semantic Versioning](https://s
 
 ## Unreleased
 
+- Generic outgoing HTTPS webhooks with fixed JSON, optional encrypted bearer token, setup guide and existing origin policy/retry handling.
+
+- Email/SMTP destination with guided setup, encrypted credentials, exact host:port allowlist, mandatory TLS (465/587), plain-text messages and sanitized retry handling.
+
+- Slack incoming webhook and Pushover destinations, with guided setup and explicit test sends through the existing management flow.
+- Gotify setup now explains the required outbound origin allowlist; provider contract tests cover Gotify, Slack and Pushover, limits and retry classification.
+
 - Overview switchboard with route selection, attention filter and delivery controls.
 - Authenticated five-second visible-page polling, freshness/stale indicators,
   session-expiry lock and reduced-motion-aware observed count transitions.
