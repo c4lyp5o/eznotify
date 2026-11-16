@@ -1,0 +1,43 @@
+services:
+  eznotify:
+    build: .
+    image: eznotify:local
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 150s
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - "no-new-privileges:true"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "5099"
+      EZNOTIFY_DB: /data/eznotify.sqlite
+      EZNOTIFY_ADMIN_TOKEN: "${EZNOTIFY_ADMIN_TOKEN:?Set EZNOTIFY_ADMIN_TOKEN}"
+      EZNOTIFY_ENCRYPTION_KEY: "${EZNOTIFY_ENCRYPTION_KEY:?Set EZNOTIFY_ENCRYPTION_KEY}"
+      EZNOTIFY_OUTBOUND_ORIGINS: "${EZNOTIFY_OUTBOUND_ORIGINS:-}"
+    volumes:
+      - data:/data
+    expose:
+      - "5099"
+    ports:
+      - "${TEST_BIND:-127.0.0.1}:${TEST_PORT:-5100}:5099"
+    networks:
+      - proxy
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 100
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  data:
+
+networks:
+  proxy:
+    external: true
+    name: "${PROXY_NETWORK:-traefik_default}"

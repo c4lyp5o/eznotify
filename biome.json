@@ -1,0 +1,17 @@
+{
+	"files": {
+		"includes": ["**", "!frontend/dist", "!data"]
+	},
+	"formatter": {
+		"indentStyle": "tab"
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"css": { "parser": { "tailwindDirectives": true } },
+	"linter": {
+		"enabled": false
+	}
+}
