@@ -13,7 +13,7 @@
 	"dependencies": {
 		"@fontsource-variable/public-sans": "5.2.7",
 		"elysia": "1.4.28",
-		"lucide-react": "0.548.0",
+		"lucide-react": "1.77.0",
 		"motion": "14.9.1",
 		"nodemailer": "10.6.0",
 		"react": "19.2.0",
