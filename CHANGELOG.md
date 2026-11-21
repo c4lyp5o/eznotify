@@ -4,30 +4,26 @@ All notable changes to eznotify. Versions follow [Semantic Versioning](https://s
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-22
+
 ### Security
 - elysia 1.4.32 fixes GHSA-9643-4qgh-g8mx (high). Dependencies now use caret ranges instead of exact pins (Biome stays pinned).
 
-### Changed
-- Header, sidebar and sign-in use the shared ez `Brand`: the ez icon and the lowercase name.
-
-## [1.0.0] - 2026-11-22
-
-### Changed
-- Dependencies updated (majors kept only where the tests passed), Docker image on oven/bun 1.4.5, Biome as the linter, and the shared ez favicon.
-
+### Added
 - Generic outgoing HTTPS webhooks with fixed JSON, optional encrypted bearer token, setup guide and existing origin policy/retry handling.
-
 - Email/SMTP destination with guided setup, encrypted credentials, exact host:port allowlist, mandatory TLS (465/587), plain-text messages and sanitized retry handling.
-
 - Slack incoming webhook and Pushover destinations, with guided setup and explicit test sends through the existing management flow.
 - Gotify setup now explains the required outbound origin allowlist; provider contract tests cover Gotify, Slack and Pushover, limits and retry classification.
-
 - Overview switchboard with route selection, attention filter and delivery controls.
 - Authenticated five-second visible-page polling, freshness/stale indicators,
   session-expiry lock and reduced-motion-aware observed count transitions.
 - Immutable intake route attribution with nullable migration for legacy records.
 - Controlled failure/retry acceptance test and manual two-destination ntfy readback proof.
 - Local non-root container smoke verification; remains local alpha, not public-ready.
+
+### Changed
+- Header, sidebar and sign-in use the shared ez `Brand`: the ez icon and the lowercase name.
+- Dependencies updated (majors kept only where the tests passed), Docker image on oven/bun 1.4.5, Biome as the linter, and the shared ez favicon.
 
 ## [0.1.0] — 2026-11-16
 
