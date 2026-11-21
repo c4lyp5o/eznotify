@@ -1,5 +1,5 @@
 # Stage 1: build the frontend with the locked toolchain.
-FROM oven/bun:1.4.2-alpine AS builder
+FROM oven/bun:1.4.5-alpine AS builder
 WORKDIR /app
 COPY package.json bun.lock biome.json ./
 RUN bun install --frozen-lockfile --ignore-scripts
@@ -8,7 +8,7 @@ COPY backend ./backend
 RUN bun run build
 
 # Stage 2: production runtime — no devDependencies, no frontend sources.
-FROM oven/bun:1.4.2-alpine
+FROM oven/bun:1.4.5-alpine
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=5099 \
