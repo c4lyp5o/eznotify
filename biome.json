@@ -1,6 +1,6 @@
 {
 	"files": {
-		"includes": ["**", "!frontend/dist", "!data"]
+		"includes": ["**", "!frontend/dist", "!data", "!**/*.md"]
 	},
 	"formatter": {
 		"indentStyle": "tab"
@@ -10,7 +10,11 @@
 			"quoteStyle": "double"
 		}
 	},
-	"css": { "parser": { "tailwindDirectives": true } },
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
 	"linter": {
 		"enabled": false
 	}
