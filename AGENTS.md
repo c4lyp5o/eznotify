@@ -26,7 +26,7 @@ eznotify is a Bun + Elysia + SQLite notification hub. One source sends one reque
 8. **Discord bot delivery must keep mentions suppressed** (`allowed_mentions: { parse: [] }`).
 
 ## Common tasks
-- Add a platform: see CONTRIBUTING.md. Validation tests first.
+- Add a platform: see DEVELOPER.md. Validation tests first.
 - Change the schema: add a migration in `store.js`; never drop user data silently.
 - Release: bump `package.json` and `VERSION` together, update CHANGELOG, then tag `vX.Y.Z` after owner approval.
 

@@ -57,7 +57,7 @@ Traefik network (default `traefik_default`). The network must already exist.
 Traefik routing, labels, TLS, middleware and load-balancer specifics are deliberately
 left to the operator. Point your proxy at service `eznotify:5099` on that network.
 No router is automatically enabled. Resource/log bounds are included; filesystem
-quotas, backups and the remaining [release gates](RELEASE-GATES.md) still apply.
+quotas, backups and the remaining [release gates](DEVELOPER.md#release-gates) still apply.
 Stop grace is 150 seconds to allow the current delivery batch to drain.
 
 ## Alternative: Docker CLI
@@ -183,3 +183,7 @@ controlled transport in `tests/acceptance.test.js`.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Development
+
+Setup, commands, tests, linting and the `development` → `master` release flow are in [DEVELOPER.md](DEVELOPER.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).
