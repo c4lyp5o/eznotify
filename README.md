@@ -4,7 +4,7 @@ One integration per service. eznotify fans a single request out to many notifica
 
 Supported destinations: **Discord** (webhook or bot token), **Telegram**, **Slack** (incoming webhook), **Pushover**, **ntfy**, **Gotify**, and **Matrix** (unencrypted rooms only).
 
-> **Status: 0.1.0 local alpha.** Not for public exposure. See [Known limits](#known-limits).
+> **Status: 1.0.0, self-hosted.** Not for public exposure. See [Known limits](#known-limits).
 
 ## Generic outgoing webhooks
 
