@@ -30,6 +30,7 @@ import { motion, useReducedMotion } from "motion/react";
 import React, { useEffect, useState } from "react";
 import { Dialog } from "./dialog.jsx";
 import { RouteDialog, SourceDialog } from "./editors.jsx";
+import { Brand } from "./ez/Brand.jsx";
 import Onboarding from "./Onboarding.jsx";
 import Overview from "./overview.jsx";
 import { Delivery, Destinations, Routes, Sources } from "./panels.jsx";
@@ -226,10 +227,7 @@ export default function Shell() {
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: reduced ? 0 : 0.32 }}
 				>
-					<div className="login-brand">
-						<img src="/icons/icon-192.png" alt="" width="20" height="20" />
-						<span>eznotify</span>
-					</div>
+					<Brand name="eznotify" />
 					<h1 className="mt-6 text-[20px] font-semibold text-ink">
 						Sign in to eznotify
 					</h1>
@@ -292,8 +290,7 @@ export default function Shell() {
 				>
 					<Menu size={16} />
 				</button>
-				<img src="/icons/icon-192.png" alt="" width="20" height="20" />
-				<span>eznotify</span>
+				<Brand name="eznotify" />
 			</header>
 			{drawer && (
 				<button
@@ -310,8 +307,7 @@ export default function Shell() {
 				}}
 			>
 				<div className="workspace-brand">
-					<img src="/icons/icon-192.png" alt="" width="20" height="20" />{" "}
-					<span className="wordmark">eznotify</span>
+					<Brand name="eznotify" />
 					<span className="text-[11px] font-normal text-mute">1.0.0</span>
 				</div>
 

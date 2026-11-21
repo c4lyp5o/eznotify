@@ -4,6 +4,12 @@ All notable changes to eznotify. Versions follow [Semantic Versioning](https://s
 
 ## [Unreleased]
 
+### Security
+- elysia 1.4.32 fixes GHSA-9643-4qgh-g8mx (high). Dependencies now use caret ranges instead of exact pins (Biome stays pinned).
+
+### Changed
+- Header, sidebar and sign-in use the shared ez `Brand`: the ez icon and the lowercase name.
+
 ## [1.0.0] - 2026-11-22
 
 ### Changed
