@@ -1,11 +1,78 @@
-# AGENTS.md — working notes for AI agents on eznotify
+# AGENTS.md
+
+Guidance for AI coding agents working on eznotify, one of the ez* self-hosted apps. **ez rules** are shared by every ez repo; **This repo** is specific to eznotify. Humans: [DEVELOPER.md](DEVELOPER.md) has the same commands with more context.
+
+<!-- ez-standard:start v1 — shared by every ez repo; edit the copy in the Hermes ez-series skill and re-sync, not this block. -->
+## ez rules (shared by every ez repo)
+
+### Ground rules
+
+1. **No commits, pushes, PRs, tags, releases or deploys without the owner's explicit OK.** Patch, test, report.
+2. **Never print, log or commit secrets.** No tokens, passwords, keys or webhook URLs in code, fixtures, logs, chat or commit messages. `.env` is never committed and never copied into an image.
+3. **Never report a check as passing unless you ran it.** Quote the real output and numbers; a skipped check is not a pass.
+4. **Tests never touch real data or real services.** Use temp dirs, throwaway database containers and mocked HTTP. Never point a test at a running instance.
+5. **Prove a regression test catches the bug.** Undo the fix, watch the test fail, restore it.
+
+### Branches and releases
+
+- `development` is the integration branch. Branch from it (`feat/…`, `fix/…`, `chore/…`) and open every PR against it.
+- `master` is released code. Only `development` merges into it, by PR. There is no `main`, `dev` or `staging`.
+- Release (only with the owner's OK): bump every `package.json` version, move `[Unreleased]` in `CHANGELOG.md` under `## [x.y.z] - YYYY-MM-DD`, merge `development` into `master`. Merging to `master` publishes the image.
+- Conventional Commits (`fix(scope): …`) with a body that says why. User-visible changes get a `CHANGELOG.md` line under `[Unreleased]`.
+
+### Stack and style
+
+- **Bun for everything**, never npm or node. The Bun version in `Dockerfile` (`oven/bun:x.y.z`) and every `bun-version:` in `.github/workflows/` must match.
+- ESM, tabs, double quotes, semicolons. Minimal, task-scoped diffs; don't reformat files you didn't change. Comments explain why, not what.
+- **Biome is the only linter**, pinned at the repo root: `bun run lint`, `bun run lint:fix`. No ESLint or Prettier. Markdown is not run through Biome.
+- **Frontend**: React + Vite + Tailwind 4 in the ez house style (shared `src/ez/` kit and tokens; ezllm is the reference). Colours come from tokens, never raw palette classes. Motion animates transform and opacity only.
+- **Icons**: every app uses the shared ez icon from ezconv: `public/icons/icon-192.png` and `icon-512.png`, linked as `rel="icon"` and `rel="apple-touch-icon"` and used in any web manifest.
+- **React Compiler** runs through `@rolldown/plugin-babel` with `reactCompilerPreset()`. `@vitejs/plugin-react` 6 has no `babel` option; passing one silently disables the compiler.
+
+### Dependencies
+
+- Lockfiles are committed. CI and Docker install with `--frozen-lockfile`. Don't touch a lockfile unless the dependency change is intentional, and review its diff.
+- Prefer releases at least a week old. Take majors one at a time and keep one only if lint, tests and build pass. Read the changelog for removed exports and options; a passing build is not proof (archiver 8 and plugin-react 6 both passed builds while breaking the app).
+
+### Docker
+
+- Images run unprivileged as `bun` (uid 1000). Every writable directory (data, uploads, logs) is created and `chown`ed in the `Dockerfile`; never write to a relative path.
+- Configuration comes from the environment at runtime (`env_file` in compose). Never `COPY .env`.
+- After changing the `Dockerfile`, the Bun version or a dependency, build the image and boot it with throwaway config. Tests don't load every entry point (workers especially).
+
+### Before you say it's done
+
+Run the lint, tests and build listed under **This repo** and report the numbers. For UI changes, also check the page in a real browser at 390px and desktop widths.
+<!-- ez-standard:end -->
+
+## This repo
+
+- Single-worker operation remains mandatory; multi-replica deployments unsupported.
+
+### Commands
+
+Run from the repo root with [Bun](https://bun.sh).
+
+| Task | Command |
+| --- | --- |
+| Run the test suite | `bun run test` |
+| Lint with Biome | `bun run lint` |
+| Apply Biome's safe fixes | `bun run lint:fix` |
+| Build | `bun run build` |
+| Start in production (PM2 where configured) | `bun run start` |
+
+### Tests
+
+`bun test` runs the suite in `tests/`.
+
+### Repo guide (kept from the previous AGENTS.md)
 
 Read this before changing code.
 
-## What this repo is
+### What this repo is
 eznotify is a Bun + Elysia + SQLite notification hub. One source sends one request; eznotify fans it out to destinations (Discord, Telegram, Gotify, ntfy, Matrix). It is a local alpha. Do not expose it publicly.
 
-## Layout
+### Layout
 - `backend/server.js` — entrypoint. Reads env, opens the DB, starts the HTTP server and the delivery worker.
 - `backend/app.js` — REST routes and the SPA fallback.
 - `backend/delivery.js` — destination validation, per-platform send paths, the queue worker.
@@ -15,7 +82,7 @@ eznotify is a Bun + Elysia + SQLite notification hub. One source sends one reque
 - `frontend/src/` — React SPA. `guides.js` holds the platform setup instructions.
 - `tests/` — Bun tests. `*-live-proof.js` files are manual scripts that send to real platforms. They are NOT part of `bun test` and must never run in CI.
 
-## Rules for agents
+### Rules for agents
 1. **Never commit or push without the owner's explicit OK.** Patch, test, report.
 2. **Never print or log secrets.** No tokens, passwords, webhook URLs or room credentials in chat, logs, fixtures or commit messages. Stage credentials in a mode-600 file and delete them after use.
 3. **Never send to real platforms from automated tests.** Live proofs need explicit owner direction.
@@ -25,12 +92,12 @@ eznotify is a Bun + Elysia + SQLite notification hub. One source sends one reque
 7. **Matrix safety:** delivery must fail closed on encrypted or unclear room state. Do not weaken `delivery.js`'s encryption check.
 8. **Discord bot delivery must keep mentions suppressed** (`allowed_mentions: { parse: [] }`).
 
-## Common tasks
+### Common tasks
 - Add a platform: see DEVELOPER.md. Validation tests first.
 - Change the schema: add a migration in `store.js`; never drop user data silently.
 - Release: bump `package.json` and `VERSION` together, update CHANGELOG, then tag `vX.Y.Z` after owner approval.
 
-## Verification commands
+### Verification commands
 ```sh
 bun run lint && bun run build && bun test
 docker build -t eznotify:dev .
