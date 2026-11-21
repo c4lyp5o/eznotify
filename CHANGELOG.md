@@ -2,7 +2,12 @@
 
 All notable changes to eznotify. Versions follow [Semantic Versioning](https://semver.org/). Pre-1.0 releases may change behaviour between minor versions.
 
-## Unreleased
+## [Unreleased]
+
+## [1.0.0] - 2026-11-22
+
+### Changed
+- Dependencies updated (majors kept only where the tests passed), Docker image on oven/bun 1.4.5, Biome as the linter, and the shared ez favicon.
 
 - Generic outgoing HTTPS webhooks with fixed JSON, optional encrypted bearer token, setup guide and existing origin policy/retry handling.
 

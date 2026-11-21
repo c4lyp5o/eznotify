@@ -312,7 +312,7 @@ export default function Shell() {
 				<div className="workspace-brand">
 					<img src="/icons/icon-192.png" alt="" width="20" height="20" />{" "}
 					<span className="wordmark">eznotify</span>
-					<span className="text-[11px] font-normal text-mute">0.1.0</span>
+					<span className="text-[11px] font-normal text-mute">1.0.0</span>
 				</div>
 
 				<nav aria-label="Sections" className="workspace-nav">
