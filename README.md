@@ -82,7 +82,8 @@ The image runs as uid 1000 and listens on `0.0.0.0` inside the container. Publis
 | --- | --- | --- |
 | `EZNOTIFY_ADMIN_TOKEN` | yes | Admin bearer token, 24+ characters. Unlocks the UI and the admin API. |
 | `EZNOTIFY_ENCRYPTION_KEY` | yes | Base64-encoded 32-byte key. Encrypts destination credentials. |
-| `EZNOTIFY_DB` | no | SQLite path. Default `data/eznotify.sqlite`; the image uses `/data/eznotify.sqlite`. The directory is created if missing. |
+| `DATA_DIR` | no | Where all state lives. Default `data/` at the repo root; the image uses `/data`. |
+| `EZNOTIFY_DB` | no | SQLite file override. Default `$DATA_DIR/eznotify.sqlite`. The directory is created if missing. |
 | `HOST` | no | Bind address. Default `127.0.0.1`; the image sets `0.0.0.0`. |
 | `PORT` | no | Default `5099`. |
 

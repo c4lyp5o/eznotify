@@ -40,7 +40,8 @@ Guidance for AI coding agents working on eznotify, one of the ez* self-hosted ap
 ### Docker
 
 - One Dockerfile shape in every repo (the ez standard): a `build` stage on `oven/bun:x.y.z-alpine` for the frontend, then an Alpine runtime with OCI labels, `--production --frozen-lockfile --ignore-scripts`, `USER bun` (uid 1000) and `HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --start-interval=2s --retries=3 CMD wget -qO- "http://127.0.0.1:${PORT}<health>"`. Static apps use `nginx-unprivileged` with the same healthcheck.
-- No root processes at runtime: no crond or root entrypoints. Schedule recurring jobs inside the app. Every writable directory (data, uploads, logs) is created and `chown`ed in the `Dockerfile`; never write to a relative path.
+- No root processes at runtime: no crond or root entrypoints. Schedule recurring jobs inside the app.
+- **All state lives under `DATA_DIR`**: `/data` in the image (created, `chown`ed to `bun` and declared `VOLUME ["/data"]`), `<repo>/data` from source (gitignored). The database is `$DATA_DIR/<app>.sqlite`; uploads, hosted files and logs are subfolders (`$DATA_DIR/logs`). One mount per app: `./<app>-data:/data`. Never write to a relative path. When moving state, keep reading the old location until it is moved (`keepLegacy` in `datadir.js`) so an upgrade never starts on an empty database.
 - Configuration comes from the environment at runtime (`env_file` in compose). Never `COPY .env`.
 - After changing the `Dockerfile`, the Bun version or a dependency, build the image and boot it with throwaway config. Tests don't load every entry point (workers especially).
 
@@ -91,7 +92,7 @@ eznotify is a Bun + Elysia + SQLite notification hub. One source sends one reque
 2. **Never print or log secrets.** No tokens, passwords, webhook URLs or room credentials in chat, logs, fixtures or commit messages. Stage credentials in a mode-600 file and delete them after use.
 3. **Never send to real platforms from automated tests.** Live proofs need explicit owner direction.
 4. **Run the gates after every change:** `bun run lint`, `bun run build`, `bun test`. Report the actual numbers.
-5. **Respect the Docker constraints:** the container runs as uid 1000 from `/app`; all writable state goes under `EZNOTIFY_DB`'s directory (`/data`). Never write to a relative path.
+5. **Respect the Docker constraints:** the container runs as uid 1000 from `/app`; all writable state goes under `DATA_DIR` (`/data`). Never write to a relative path.
 6. **Single worker.** Do not add replicas or multi-process queue leases without a design discussion.
 7. **Matrix safety:** delivery must fail closed on encrypted or unclear room state. Do not weaken `delivery.js`'s encryption check.
 8. **Discord bot delivery must keep mentions suppressed** (`allowed_mentions: { parse: [] }`).
