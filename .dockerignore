@@ -10,3 +10,11 @@ data
 .github
 tests
 docs
+
+# ez standard
+**/node_modules
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+coverage
