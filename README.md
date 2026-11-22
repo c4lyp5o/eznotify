@@ -4,7 +4,7 @@ One integration per service. eznotify fans a single request out to many notifica
 
 Supported destinations: **Discord** (webhook or bot token), **Telegram**, **Slack** (incoming webhook), **Pushover**, **ntfy**, **Gotify**, and **Matrix** (unencrypted rooms only).
 
-> **Status: 0.1.0 local alpha.** Not for public exposure. See [Known limits](#known-limits).
+> **Status: 1.0.0, self-hosted.** Not for public exposure. See [Known limits](#known-limits).
 
 ## Generic outgoing webhooks
 
@@ -57,7 +57,7 @@ Traefik network (default `traefik_default`). The network must already exist.
 Traefik routing, labels, TLS, middleware and load-balancer specifics are deliberately
 left to the operator. Point your proxy at service `eznotify:5099` on that network.
 No router is automatically enabled. Resource/log bounds are included; filesystem
-quotas, backups and the remaining [release gates](RELEASE-GATES.md) still apply.
+quotas, backups and the remaining [release gates](DEVELOPER.md#release-gates) still apply.
 Stop grace is 150 seconds to allow the current delivery batch to drain.
 
 ## Alternative: Docker CLI
@@ -82,7 +82,8 @@ The image runs as uid 1000 and listens on `0.0.0.0` inside the container. Publis
 | --- | --- | --- |
 | `EZNOTIFY_ADMIN_TOKEN` | yes | Admin bearer token, 24+ characters. Unlocks the UI and the admin API. |
 | `EZNOTIFY_ENCRYPTION_KEY` | yes | Base64-encoded 32-byte key. Encrypts destination credentials. |
-| `EZNOTIFY_DB` | no | SQLite path. Default `data/eznotify.sqlite`; the image uses `/data/eznotify.sqlite`. The directory is created if missing. |
+| `DATA_DIR` | no | Where all state lives. Default `data/` at the repo root; the image uses `/data`. |
+| `EZNOTIFY_DB` | no | SQLite file override. Default `$DATA_DIR/eznotify.sqlite`. The directory is created if missing. |
 | `HOST` | no | Bind address. Default `127.0.0.1`; the image sets `0.0.0.0`. |
 | `PORT` | no | Default `5099`. |
 
@@ -183,3 +184,7 @@ controlled transport in `tests/acceptance.test.js`.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Development
+
+Setup, commands, tests, linting and the `development` → `master` release flow are in [DEVELOPER.md](DEVELOPER.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).

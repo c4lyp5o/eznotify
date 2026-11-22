@@ -1,7 +1,9 @@
 import { chmodSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { createApp } from "./app.js";
+import { dataDir } from "./datadir.js";
 import { createWorker } from "./delivery.js";
+import { logger } from "./logger.js";
 import { outboundTransport } from "./policy.js";
 import { prune } from "./retention.js";
 import { openStore } from "./store.js";
@@ -9,7 +11,10 @@ import { openStore } from "./store.js";
 if (!process.env.EZNOTIFY_ADMIN_TOKEN || !process.env.EZNOTIFY_ENCRYPTION_KEY)
 	throw new Error("Set EZNOTIFY_ADMIN_TOKEN and EZNOTIFY_ENCRYPTION_KEY");
 process.umask(0o077);
-const dbPath = process.env.EZNOTIFY_DB || "data/eznotify.sqlite";
+// All state lives under DATA_DIR (ez standard); never relative to the cwd.
+const dbPath =
+	process.env.EZNOTIFY_DB ||
+	join(dataDir(join(import.meta.dir, "..")), "eznotify.sqlite");
 const dbDir = dirname(dbPath);
 mkdirSync(dbDir, { recursive: true, mode: 0o700 });
 chmodSync(dbDir, 0o700);
@@ -33,14 +38,14 @@ const maintenance = setInterval(() => {
 	try {
 		prune(store);
 	} catch {
-		console.error("Retention failed");
+		logger.error("Retention failed");
 	}
 }, 3600000);
 const timer = setInterval(() => {
 	if (active) return;
 	active = true;
 	running = tick()
-		.catch(() => console.error("Worker failed"))
+		.catch(() => logger.error("Worker failed"))
 		.finally(() => {
 			active = false;
 		});
@@ -54,7 +59,7 @@ for (const signal of ["SIGTERM", "SIGINT"])
 		store.db.close();
 		process.exit(0);
 	});
-console.log(
+logger.info(
 	"eznotify listening on " +
 		(process.env.HOST || "127.0.0.1") +
 		":" +
