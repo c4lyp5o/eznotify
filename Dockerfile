@@ -29,7 +29,7 @@ COPY package.json bun.lock ./
 RUN bun install --production --frozen-lockfile --ignore-scripts
 COPY backend ./backend
 COPY --from=build /app/frontend/dist ./frontend/dist
-RUN mkdir -p /data && chown -R bun:bun /data
+RUN mkdir -p /data /data/logs && chown -R bun:bun /data /data/logs
 USER bun
 VOLUME ["/data"]
 EXPOSE 5099

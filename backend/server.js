@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { createApp } from "./app.js";
 import { dataDir } from "./datadir.js";
 import { createWorker } from "./delivery.js";
+import { logger } from "./logger.js";
 import { outboundTransport } from "./policy.js";
 import { prune } from "./retention.js";
 import { openStore } from "./store.js";
@@ -37,14 +38,14 @@ const maintenance = setInterval(() => {
 	try {
 		prune(store);
 	} catch {
-		console.error("Retention failed");
+		logger.error("Retention failed");
 	}
 }, 3600000);
 const timer = setInterval(() => {
 	if (active) return;
 	active = true;
 	running = tick()
-		.catch(() => console.error("Worker failed"))
+		.catch(() => logger.error("Worker failed"))
 		.finally(() => {
 			active = false;
 		});
@@ -58,7 +59,7 @@ for (const signal of ["SIGTERM", "SIGINT"])
 		store.db.close();
 		process.exit(0);
 	});
-console.log(
+logger.info(
 	"eznotify listening on " +
 		(process.env.HOST || "127.0.0.1") +
 		":" +
