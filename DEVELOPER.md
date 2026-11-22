@@ -67,7 +67,7 @@ Run the server locally with `EZNOTIFY_ADMIN_TOKEN` (24+ characters) and `EZNOTIF
 ```sh
 docker build -t eznotify:dev .
 ```
-The container runs as uid 1000, reads `EZNOTIFY_DB` for its database path and keeps data in `/data`. Do not bake secrets into the image.
+The container runs as uid 1000, keeps all state under `DATA_DIR` (`/data`); `EZNOTIFY_DB` overrides the database file. Do not bake secrets into the image.
 
 ### Adding a destination platform
 1. Add the kind to `validateDestination` in `backend/delivery.js`, with a validation test that covers malformed and hostile inputs.

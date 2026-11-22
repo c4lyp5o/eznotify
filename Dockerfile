@@ -23,7 +23,7 @@ ENV TZ=Asia/Kuala_Lumpur \
 	NODE_ENV=production \
 	HOST=0.0.0.0 \
 	PORT=5099 \
-	EZNOTIFY_DB=/data/eznotify.sqlite
+	DATA_DIR=/data
 WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --production --frozen-lockfile --ignore-scripts

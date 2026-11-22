@@ -1,6 +1,7 @@
 import { chmodSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { createApp } from "./app.js";
+import { dataDir } from "./datadir.js";
 import { createWorker } from "./delivery.js";
 import { outboundTransport } from "./policy.js";
 import { prune } from "./retention.js";
@@ -9,7 +10,10 @@ import { openStore } from "./store.js";
 if (!process.env.EZNOTIFY_ADMIN_TOKEN || !process.env.EZNOTIFY_ENCRYPTION_KEY)
 	throw new Error("Set EZNOTIFY_ADMIN_TOKEN and EZNOTIFY_ENCRYPTION_KEY");
 process.umask(0o077);
-const dbPath = process.env.EZNOTIFY_DB || "data/eznotify.sqlite";
+// All state lives under DATA_DIR (ez standard); never relative to the cwd.
+const dbPath =
+	process.env.EZNOTIFY_DB ||
+	join(dataDir(join(import.meta.dir, "..")), "eznotify.sqlite");
 const dbDir = dirname(dbPath);
 mkdirSync(dbDir, { recursive: true, mode: 0o700 });
 chmodSync(dbDir, 0o700);
